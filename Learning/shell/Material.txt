@@ -1,0 +1,160 @@
+Youtube Kurs:
+https://www.youtube.com/playlist?list=PLT98CRl2KxKGj-VKtApD8-zCqSaN2mD4w (20part Kurs)
+https://www.youtube.com/watch?v=Sx9zG7wa4FA (7h video)
+
+Text Kurs:
+
+Modul 1: Das Fundament (Shebang, Variablen & Argumente)
+
+Jedes gute Skript beginnt mit einer "Shebang" in der ersten Zeile. In deinen Beispielen steht dort #!/bin/bash. Das sagt dem Betriebssystem: "Benutze bitte das Bash-Programm, um diese Datei zu lesen und auszuführen", anstatt der Standard-Shell.
+Variablen
+
+In Bash speicherst du Werte, indem du ihnen einen Namen gibst. Wichtig: Es dürfen keine Leerzeichen vor oder nach dem Gleichheitszeichen stehen. Um den Wert abzurufen, setzt du ein Dollarzeichen $ davor.
+Bash
+
+NAME="TrafkTux"
+echo "Hallo, $NAME"
+
+Argumente
+
+Oft willst du dem Skript beim Start direkt von außen Werte übergeben (z.B. ./script.sh MeinArgument).
+
+    $1, $2, $3 etc. greifen auf das erste, zweite, dritte Argument zu.
+
+    $# speichert die Anzahl der übergebenen Argumente (das nutzt du in gitpush.sh, um zu prüfen, ob der User eine Commit-Message mitgegeben hat).
+
+    Übung 1:
+    Erstelle ein Skript namens hallo.sh. Es soll eine Variable ORT (mit dem Wert "Wien") fest einprogrammiert haben. Das Skript soll das erste übergebene Argument beim Programmaufruf als Namen nehmen und auf der Konsole ausgeben: "Hallo [Name], willkommen in [Ort]!".
+
+Modul 2: Interaktion & Bedingungen
+
+Damit ein Skript nicht nur stur von oben nach unten abläuft, muss es Entscheidungen treffen können und mit dem Nutzer kommunizieren.
+Benutzereingaben (read)
+
+Mit dem Befehl read wartet das Skript auf eine Eingabe des Nutzers auf der Tastatur. In deinem gitpush.sh wird das für die Commit-Message genutzt:
+Bash
+
+read -p "Bitte gib dein Alter ein: " ALTER
+
+If-Bedingungen
+
+Um Dinge zu prüfen, nutzt man if. In Bash sehen Vergleiche oft so aus: if [ Bedingung ]; then.
+Bash
+
+if [ "$ALTER" -ge 18 ]; then
+    echo "Du bist alt genug."
+else
+    echo "Du bist noch zu jung."
+fi
+
+Besonderheiten in Bash: * Für Zahlen nutzt man oft Abkürzungen: -ge steht für "greater or equal" (größer gleich), -eq für gleich.
+
+    Für Textvergleiche nimmt man = oder !=.
+
+    In deinem Installations-Skript nutzt du if ! wget ... – das Ausrufezeichen steht für "NICHT". Es bedeutet: "Wenn der Download-Befehl fehlschlägt, dann mache Folgendes."
+
+    Übung 2:
+    Erweitere dein Skript. Frag den Nutzer per read -p, ob er das Skript wirklich ausführen will (erwarte "ja" oder "nein"). Wenn er "ja" tippt, gib eine Erfolgsmeldung aus. Wenn er etwas anderes tippt, beende das Skript mit exit 1 (das wirft einen Fehler-Code ans System zurück).
+
+Modul 3: Arrays & Schleifen
+
+Im install_RSA.sh hast du eine lange Liste von Spielen. Wenn man viele ähnliche Dinge verarbeiten will, nutzt man Arrays und Schleifen.
+Arrays
+
+Ein Array ist wie eine Liste, die mehrere Werte in einer Variablen speichert.
+Bash
+
+SPIELE=("Tetris" "Pong" "Snake")
+
+For-Schleifen
+
+Um für jeden Eintrag in dieser Liste den exakt gleichen Code auszuführen, nutzt man eine for-Schleife:
+Bash
+
+for spiel in "${SPIELE[@]}"; do
+    echo "Lade $spiel herunter..."
+done
+
+Das "${SPIELE[@]}" sieht etwas kryptisch aus, ist aber essenziell in Bash: Es bedeutet "Nimm alle Elemente des Arrays einzeln, und behandle sie als zusammenhängende Wörter, selbst wenn sie Leerzeichen enthalten."
+
+    Übung 3:
+    Erstelle ein Array mit drei Wörtern (z.B. "Bilder", "Dokumente", "Musik"). Schreibe eine Schleife, die für jedes Wort den Befehl mkdir ausführt, um einen entsprechenden Ordner zu erstellen. Gib für jeden erstellten Ordner eine Bestätigung per echo aus.
+
+Modul 4: Funktionen & String-Magie
+
+Wenn Skripte komplexer werden (wie dein gitpush.sh), fasst man Codeblöcke in Funktionen zusammen.
+Funktionen
+
+Eine Funktion ist wie ein Mini-Skript innerhalb deines Skripts. In deinem Code deklarierst du commit_and_push().
+Bash
+
+meine_funktion() {
+    echo "Die Funktion wurde gestartet!"
+    echo "Parameter für diese Funktion: $1"
+}
+
+# Funktion später aufrufen:
+meine_funktion "Test-Parameter"
+
+Strings manipulieren (Text ändern)
+
+Im install_RSA.sh siehst du diese Zeile: encoded_game="${game// /%20}".
+Das ist Bash-interne Suchen-und-Ersetzen-Logik! Sie nimmt den Text in der Variablen game, sucht nach Leerzeichen ( ) und ersetzt sie alle (//) durch %20 (den URL-Code für Leerzeichen). So macht man Dateinamen fit für Web-Links.
+
+    Übung 4:
+    Schreibe eine Funktion namens backup_erstellen. Sie soll als $1 einen Dateinamen übergeben bekommen. In der Funktion kopierst du diese Datei (mit dem cp Befehl) und hängst an den neuen Dateinamen die Endung .bak an. Rufe die Funktion am Ende des Skripts mit einer Testdatei auf.
+
+Ein kurzer Hinweis zu deinen Beispielen: Dinge wie jq (zum Bearbeiten von JSON-Dateien) oder awk sind eigenständige Kommandozeilen-Tools, die du aus dem Bash-Skript heraus aufrufst. Das Bash-Skript ist quasi nur der Kleber, der die Logik und diese starken Tools verbindet!
+
+Modul 5: Pipes & Umleitungen (Redirection)
+
+In der Shell gibt jeder Befehl Text aus (Standard Output) und wirft bei Fehlern auch Fehlermeldungen aus (Standard Error). Mit Umleitungen und Pipes kannst du diesen Datenstrom wie Wasser durch Rohre lenken.
+Ausgabe in Dateien umleiten (>, >>)
+
+Anstatt Text in der Konsole anzuzeigen, schreibst du ihn in eine Datei:
+
+    > überschreibt die Datei komplett. (In deinem Skript: echo '{}' > "$TMP_GAMES_JSON")
+
+    >> hängt den Text unten an die Datei an.
+
+Fehler im schwarzen Loch verschwinden lassen (2>/dev/null)
+
+Das hast du im gitpush.sh dauernd gemacht (z.B. git push origin HEAD 2>/dev/null). Das bedeutet: "Wenn dieser Befehl einen Fehler auswirft (Kanal 2), dann zeig ihn mir nicht an, sondern wirf ihn ins Nirwana (/dev/null)."
+Pipes (|)
+
+Der senkrechte Strich (Pipe) nimmt die Ausgabe des linken Befehls und stopft sie als Eingabe in den rechten Befehl.
+In deinem Installationsskript: find "$TARGET_DIR" ... | while read -r html_path; do
+Das sucht alle HTML-Dateien und übergibt die Liste direkt an eine Schleife, die sie Zeile für Zeile abarbeitet.
+
+    Übung 5:
+    Erstelle eine Datei test.txt und schreibe mit echo und > einen Satz hinein. Benutze dann den Befehl cat test.txt | grep "Wort", um nach einem bestimmten Wort in dieser Datei zu filtern.
+
+Modul 6: Command Substitution (Befehls-Ersetzung)
+
+Oft willst du das Ergebnis eines Befehls in einer Variablen speichern, um später damit weiterzuarbeiten. Dafür schließt du den Befehl in $(...) ein.
+Basic Substitution
+
+In deinem gitpush.sh steht: ROOT_DIR="$(pwd)"
+Das führt pwd (print working directory) aus und speichert den Pfad, in dem du dich gerade befindest, in der Variablen ROOT_DIR.
+Process Substitution < <(...)
+
+Das ist echte Bash-Magie und steht in deinem gitpush.sh beim mapfile-Befehl. Es führt einen extrem komplexen Befehl in den Klammern aus (inklusive Sortierungen und awk) und tut so, als wäre das Ergebnis eine Datei, aus der mapfile dann lesen kann.
+
+    Übung 6:
+    Schreibe ein Skript, das das aktuelle Datum mit dem Befehl date +%Y-%m-%d in einer Variablen speichert. Nutze diese Variable dann, um eine Datei zu erstellen, die z.B. backup_2026-06-12.txt heißt.
+
+Modul 7: Fehlerbehandlung (Exit Codes) & Logik-Verknüpfungen
+
+Ein Skript sollte nicht einfach dumm weiterlaufen, wenn etwas schiefgeht. Jeder Befehl gibt versteckt einen "Exit Code" zurück. 0 bedeutet "Alles super", alles andere (meist 1) bedeutet "Fehler".
+Kurzschluss-Logik (&& und ||)
+
+Du kannst Befehle direkt verknüpfen, ohne ein langes if zu schreiben:
+
+    && (UND): Der zweite Befehl wird nur ausgeführt, wenn der erste erfolgreich war.
+    Beispiel: mkdir neuer_ordner && cd neuer_ordner
+
+    || (ODER): Der zweite Befehl wird nur ausgeführt, wenn der erste fehlgeschlagen ist.
+    In deinem Skript: cd "$TARGET_DIR" || { echo "Error..."; exit 1; } (Geh in den Ordner ODER wirf einen Fehler und beende das Skript).
+
+    Übung 7:
+    Schreibe ein Skript, das versucht, in einen Ordner namens gibt_es_nicht zu wechseln (mit cd). Verknüpfe das mit ||, sodass eine Warnung ausgegeben wird ("Ordner existiert nicht!") und das Skript mit exit 1 abgebrochen wird, falls das cd fehlschlägt.
